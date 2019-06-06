@@ -1,3 +1,11 @@
+/**
+    This is the parent driver for the composite GoGoGate 2 driver for Hubitat
+    The most recent version is available at:
+        https://raw.githubusercontent.com/mgroeninger/Hubitat-gogogate2/master/GoGoGate_child_driver.groovy
+    
+    For more documentation please see https://github.com/mgroeninger/Hubitat-gogogate2
+**/
+
 metadata {
     definition (name: "GoGoGate 2 Child", namespace: "gogogate2-composite", author: "Matt Groeninger") {
  		capability "Door Control"

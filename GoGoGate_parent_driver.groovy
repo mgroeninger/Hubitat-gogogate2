@@ -1,6 +1,13 @@
+/**
+    This is the parent driver for the composite GoGoGate 2 driver for Hubitat
+    The most recent version is available at:
+        https://raw.githubusercontent.com/mgroeninger/Hubitat-gogogate2/master/GoGoGate_parent_driver.groovy
+    
+    For more documentation please see https://github.com/mgroeninger/Hubitat-gogogate2
+**/
+
 def version() {"v0.01"}
 def childType() {"GoGoGate 2 Child"}
-
 
 metadata {
     definition (name: "GoGoGate 2 Parent", namespace: "gogogate2-composite", author: "Matt Groeninger") {
