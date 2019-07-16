@@ -372,16 +372,17 @@ def getSensorInfo(int sensor) {
         resp = getInfo(params)
 		if (resp) {
 			log("Raw sensor info is: ${resp}","debug")
-			temp = parse(resp.toString(),0)
+			temp = ((parse(resp.toString(),0)) as Integer)/1000
 			battery = parse(resp.toString(),1)
-            if (temp != "-1000000") {
-                log("Converting temp to system scale","trace")
-                temp = (temp as Integer)/1000
-                temp = convertTemperatureIfNeeded(temp, "C", 1)
-                temp = ("${temp} \u00b0" + getTemperatureScale()) as String
-            }
-			[ temp, battery ]
-			
+            log("Converting temp to system scale","trace")
+            reportTemp = convertTemperatureIfNeeded(temp, "C", 1)
+            reportTemp = ("${reportTemp} \u00b0" + getTemperatureScale()) as String            
+            if (temp > -40 && temp < 60) {
+       			[ reportTemp, battery ]
+            } else {
+                log("Invalid sensor temperature of ${reportTemp} .","warn")
+                [ false, false]
+            }			
 		} else {
 			log("Unable to get sensor data. Possible misconfiguration of device connection information or sensor connection problem.","warn")
 			[ false, false]
