@@ -17,7 +17,7 @@ Installation
 5. Optionally, change the child device labels to name you would like to use
 
 Note:
-The driver simulates "opening" and "closing" states when the a door is opened or closed using Hubitat but does not have any way to simulate those states when a door is opened or closed with the door button itself. 
+The driver simulates "opening" and "closing" states when a door is opened or closed using Hubitat but does not have any way to simulate those states when a door is opened or closed with the door button itself. 
 
 Credits/Development Progression:
 * Started with basic composite plugin framework from https://github.com/dpark/Hubitat-Composite-Driver
