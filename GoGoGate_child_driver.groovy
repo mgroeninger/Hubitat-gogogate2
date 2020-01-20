@@ -1,5 +1,5 @@
 /**
-    This is the parent driver for the composite GoGoGate 2 driver for Hubitat
+    This is the child driver for the composite GoGoGate 2 driver for Hubitat
     The most recent version is available at:
         https://raw.githubusercontent.com/mgroeninger/Hubitat-gogogate2/master/GoGoGate_child_driver.groovy
     
