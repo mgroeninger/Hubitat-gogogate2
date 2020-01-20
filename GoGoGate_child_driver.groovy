@@ -89,6 +89,9 @@ def setDoor(String strValue) {
 	    }
 		if (device.currentValue("door") == "opening" || device.currentValue("door") == "closing" ) {
    			def now = new Date()
+			if (device.currentValue("lastUpdated") == null) {
+				state.lastUpdated = now
+			}
 			def then = new Date(device.currentValue("lastUpdated"))
 			duration = groovy.time.TimeCategory.minus(now,then)
 			if (duration.toMilliseconds() < (nvl(transitionInterval,45)*1000)) {
