@@ -14,7 +14,10 @@ Installation
 2. Add the parent device driver to Drivers Code on your Hubitat hub from https://raw.githubusercontent.com/mgroeninger/Hubitat-gogogate2/master/GoGoGate_parent_driver.groovy
 3. Create a Virtual Device (under devices) of type "GoGoGate 2 Parent"
 4. Fill in the ip address of your GoGoGate2 device, as well as the username and password you use to access it and save the preferences
-5. Optionally, change the child device labels to name you would like to use 
+5. Optionally, change the child device labels to name you would like to use
+
+Note:
+The driver simulates "opening" and "closing" states when the a door is opened or closed using Hubitat but does not have any way to simulate those states when a door is opened or closed with the door button itself. 
 
 Credits/Development Progression:
 * Started with basic composite plugin framework from https://github.com/dpark/Hubitat-Composite-Driver
