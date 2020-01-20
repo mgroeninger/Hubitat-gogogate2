@@ -8,16 +8,16 @@
 
 metadata {
     definition (name: "GoGoGate 2 Child", namespace: "gogogate2-composite", author: "Matt Groeninger") {
- 		capability "Door Control"
-		capability "Garage Door Control"
+        capability "DoorControl"
+        capability "GarageDoorControl"
 		capability "Temperature Measurement"
 		capability "Sensor"
 		capability "Switch"
+        capability "ContactSensor"
 
 		attribute "lastUpdated", "string"
 		attribute "battery", "string"
 		
-		//command set
 		command "open"
         command "close"
 		command "on"
@@ -27,6 +27,10 @@ metadata {
 
 preferences {
     input "transitionInterval", "number", title: "Door Transition Interval", description: "Duration to ignore door state while opening/closing (in seconds)", range: "2..60", defaultValue: 45
+}
+
+def initialize() {
+	sendUpdateEvent()
 }
 
 def on() {
@@ -50,7 +54,7 @@ def getVerbs(String key) {
             "open": ["open", "opening", "open","on"], 
             "opened": ["opened", "opening", "open","on"], 
             "close":["close", "closing", "closed","off"],
-            "closed":["closed", "closing", "close","off"]
+            "closed":["closed", "closing", "closed","off"]
         ]
         verbs.get(key) ?: false
     }
@@ -67,6 +71,7 @@ def cmdToggle(String action) {
 		parent.toggleDoor(id)
 		parent.log("Setting ${id} (${device.getLabel()}) to ${verbs.get(1)}","debug")
         sendEvent(name: "switch", value: verbs.get(3), isStateChange: true)
+        sendEvent(name: "contact", value: verbs.get(2), isStateChange: true)
 		sendEvent(name: "door", value: verbs.get(1), isStateChange: true)
 		sendUpdateEvent()
 	} else {
@@ -100,6 +105,7 @@ def setDoor(String strValue) {
 		}
 		parent.log("Door has changed states from ${device.currentValue("door")} to ${strValue}.","info")
         sendEvent(name: "switch", value: verbs.get(3), isStateChange: true)
+        sendEvent(name: "contact", value: verbs.get(2), isStateChange: true)
 		sendEvent(name: "door", value: verbs.get(0), isStateChange: true)
         sendUpdateEvent ()
    }
