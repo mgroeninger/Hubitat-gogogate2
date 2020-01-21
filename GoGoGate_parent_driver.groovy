@@ -117,7 +117,7 @@ private determineLogLevel(data) {
     }
 }
 
-def log(data, type) {
+public log(data, type) {
     data = "GoGoGate2 -- ${data ?: ''}"
     if (determineLogLevel(type) >= determineLogLevel(logging ?: "INFO")) {
         switch (type?.toUpperCase()) {
@@ -259,7 +259,7 @@ def off() {
 	}
 }
 
-def toggleDoor(Integer id) {
+public toggleDoor(Integer id) {
 	if (testCookie()) {
 		params = [
 			uri: "http://${deviceIP}/isg/opendoor.php?numdoor=${id}&status=0&login=${username}",
@@ -275,7 +275,12 @@ def toggleDoor(Integer id) {
 }
 
 def getControllerInfo() {
-    lightStatus = getLightStatus()
+	try {
+        lightStatus = getLightStatus()
+    } catch(e) {
+            log("getLightStatus call failed: ${e}","error")
+            return
+    }
 	if (device.currentValue("switch") != lightStatus) {
 		log("Light has changed states from ${device.currentValue("switch")} to ${lightStatus}.","info")
         sendEvent(name: "switch", value: lightStatus, isStateChange: true)
@@ -293,14 +298,19 @@ def getControllerInfo() {
         log("Door ${currentDoor} has returned ${currentDoorStateInt}, which indicates the door is ${currentDoorDesc}.","trace")
 		try {
 			child.setDoor(currentDoorDesc)
-			} 
-        catch(e) {
-            log("Child parse call failed: ${e}","error")
+		} catch(e) {
+            log("Child setDoor call failed: ${e}","error")
+            return
         }
-        def (temp, battery) = getSensorInfo(currentDoor)
-        log("Sensor ${currentDoor} indicates the temperature is ${temp} and the battery level is ${battery}.","debug")
-        child.setTemperature(temp)
-        child.setBattery(battery)
+		try {
+            def (temp, battery) = getSensorInfo(currentDoor)
+                log("Sensor ${currentDoor} indicates the temperature is ${temp} and the battery level is ${battery}.","debug")
+                child.setTemperature(temp)
+                child.setBattery(battery)   
+		} catch(e) {
+            log("Child getSensorInfo call failed: ${e}","error")
+            return
+        }
     }
     if (lightStatus == "unknown" || doorStateArr == null) {
         log("Multiple connection failures. Possible misconfiguration of device connection information.", "error")
@@ -374,18 +384,19 @@ def getSensorInfo(int sensor) {
 			log("Raw sensor info is: ${resp}","debug")
 			temp = ((parse(resp.toString(),0)) as Integer)/1000
 			battery = parse(resp.toString(),1)
-            log("Converting temp to system scale","trace")
+            log("Converting temp to system scale ${getTemperatureScale()}","trace")
             reportTemp = convertTemperatureIfNeeded(temp, "C", 1)
             reportTemp = ("${reportTemp} \u00b0" + getTemperatureScale()) as String            
+            log("Temperature reported as ${reportTemp}","trace")
             if (temp > -40 && temp < 60) {
-       			[ reportTemp, battery ]
+       			return [ reportTemp, battery ]
             } else {
                 log("Invalid sensor temperature of ${reportTemp} .","warn")
-                [ false, false]
+                return [ false, false]
             }			
 		} else {
 			log("Unable to get sensor data. Possible misconfiguration of device connection information or sensor connection problem.","warn")
-			[ false, false]
+			return [ false, false]
 		}
     }
 }

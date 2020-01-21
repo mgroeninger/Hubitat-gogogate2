@@ -50,17 +50,17 @@ def close() {
     cmdToggle("close")
 }
 
-def getVerbs(String key) {
-        def verbs = [
-            "open": ["open", "opening", "open","on"], 
-            "opened": ["opened", "opening", "open","on"], 
-            "close":["close", "closing", "closed","off"],
-            "closed":["closed", "closing", "closed","off"]
-        ]
-        verbs.get(key) ?: false
-    }
+public getVerbs(String key) {
+	def verbs = [
+		"open": ["open", "opening", "open","on"], 
+		"opened": ["opened", "opening", "open","on"], 
+		"close":["close", "closing", "closed","off"],
+		"closed":["closed", "closing", "closed","off"]
+	]
+	verbs.get(key) ?: false
+}
 
-def cmdToggle(String action) {
+public cmdToggle(String action) {
     def id = device.deviceNetworkId[-1] as Integer
     def verbs = getVerbs(action)
 	if (!verbs) {
@@ -81,44 +81,53 @@ def cmdToggle(String action) {
 }
 
 
-def setDoor(String strValue) {
-    if (strValue != device.currentValue("door")) {
-        def verbs = getVerbs(strValue)
-       	if (!verbs) {
-	    	parent.log("Invalid action ${strValue} submitted to door.","error")
-		    return
-	    }
-		if (state.lastUpdated == null) {
+public setDoor(String strValue) {
+     if (strValue != device.currentValue("door")) {
+         def verbs = getVerbs(strValue)
+        	if (!verbs) {
+ 	    	parent.log("Invalid action ${strValue} submitted to door.","error")
+ 		    return
+ 	    }
+		def process = true
+ 		if (state.lastUpdated == null) {
+			parent.log("lastUpdated state value is null.","debug")
 			state.lastUpdated = (new Date()).format("yyyy-MM-dd HH:mm:ss")
-		} else {
-			if (device.currentValue("door") == "opening" || device.currentValue("door") == "closing" ) {
+ 		} else {
+ 			if (device.currentValue("door") == "opening" || device.currentValue("door") == "closing" ) {
+				parent.log("Currently transitioning between states, need to see if I should wait.","debug")
+				def now = (new Date())
+				def last = (new Date()).parse("yyyy-MM-dd HH:mm:ss",state.lastUpdated)
 				use (groovy.time.TimeCategory) {
-					def now = (new Date())
-					def last = (new Date()).parse("yyyy-MM-dd HH:mm:ss",state.lastUpdated)
-					duration = TimeCategory.minus(now, last)
-					if (duration.toMilliseconds() < nvl(transitionInterval,45)*1000) {
-						parent.log("Ignoring door status during transition time: at ${duration} of ${transitionInterval} seconds","debug")
-						return
+ 					def duration = TimeCategory.minus(now, last)
+					if (duration.toMilliseconds()/1000 < nvl(transitionInterval,45)) {
+						process = false
 					}
+ 				}
+
+				if (!process) {
+					parent.log("Transition time started ${last}","trace")
+					parent.log("Time is now ${now}","trace")
+					parent.log("Ignoring door status during transition time... skipping","debug")
+					return
 				}
-				parent.log("Waited ${transitionInterval} seconds for door to transition.  Door now reports ${strValue}.","info")
-				if (!verbs.contains(device.currentValue("door"))) {
-					parent.log("Door went from ${device.currentValue("door")} to ${strValue} when it shouldn't have.","error")
-				} else {
-					parent.log("Door went from ${device.currentValue("door")} to ${strValue}.","debug")
-				}
-			}
-		}
+ 				parent.log("Waited for door to transition.  Door now reports ${strValue}.","info")
+ 				if (!verbs.contains(device.currentValue("door"))) {
+ 					parent.log("Door went from ${device.currentValue("door")} to ${strValue} when it shouldn't have.","error")
+ 				} else {
+ 					parent.log("Door went from ${device.currentValue("door")} to ${strValue}.","debug")
+ 				}
+ 			}
+ 		}
 		parent.log("Door has changed states from ${device.currentValue("door")} to ${strValue}.","info")
-        sendEvent(name: "switch", value: verbs.get(3), isStateChange: true)
-        sendEvent(name: "contact", value: verbs.get(2), isStateChange: true)
+		sendEvent(name: "switch", value: verbs.get(3), isStateChange: true)
+		sendEvent(name: "contact", value: verbs.get(2), isStateChange: true)
 		sendEvent(name: "door", value: verbs.get(0), isStateChange: true)
-        sendUpdateEvent ()
-   }
+		sendUpdateEvent ()
+    }
 }
 
 
-def setBattery(String strValue) {
+public setBattery(String strValue) {
     if (strValue != device.currentValue("battery")) {
 		parent.log("Battery has changed states from ${device.currentValue("battery")} to ${strValue}.","info")
         sendEvent(name: "battery", value: strValue, isStateChange: true)
@@ -126,7 +135,7 @@ def setBattery(String strValue) {
     }
 }
 
-def setTemperature(String strValue) {
+public setTemperature(String strValue) {
 	def (temp, String scale) = strValue.split()
 	temp = temp as double
     if (temp != device.currentValue("temperature")) {
