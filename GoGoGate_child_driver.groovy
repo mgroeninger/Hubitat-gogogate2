@@ -6,6 +6,9 @@
     For more documentation please see https://github.com/mgroeninger/Hubitat-gogogate2
 **/
 
+import groovy.time.*
+
+
 metadata {
     definition (name: "GoGoGate 2 Child", namespace: "gogogate2-composite", author: "Matt Groeninger") {
         capability "DoorControl"
@@ -87,17 +90,20 @@ def setDoor(String strValue) {
 	    	parent.log("Invalid action ${strValue} submitted to door.","error")
 		    return
 	    }
-		if (device.currentValue("door") == "opening" || device.currentValue("door") == "closing" ) {
-   			def now = new Date()
-			if (device.currentValue("lastUpdated") == null) {
-				state.lastUpdated = now
-			}
-			def then = new Date(device.currentValue("lastUpdated"))
-			duration = groovy.time.TimeCategory.minus(now,then)
-			if (duration.toMilliseconds() < (nvl(transitionInterval,45)*1000)) {
-				parent.log("Ignoring door status during transition time: at ${duration} of ${transitionInterval} seconds","debug")
-				return
-			} else {
+		if (state.lastUpdated == null) {
+			state.lastUpdated = (new Date()).format("yyyy-MM-dd HH:mm:ss")
+		} else {
+			if (device.currentValue("door") == "opening" || device.currentValue("door") == "closing" ) {
+				def process = true
+				use (groovy.time.TimeCategory) {
+					def now = (new Date())
+					def last = (new Date()).parse("yyyy-MM-dd HH:mm:ss",state.lastUpdated)
+					duration = TimeCategory.minus(now, last)
+					if (duration.toMilliseconds() < nvl(transitionInterval,45)*1000) {
+						parent.log("Ignoring door status during transition time: at ${duration} of ${transitionInterval} seconds","debug")
+						return
+					}
+				}
 				parent.log("Waited ${transitionInterval} seconds for door to transition.  Door now reports ${strValue}.","info")
 				if (!verbs.contains(device.currentValue("door"))) {
 					parent.log("Door went from ${device.currentValue("door")} to ${strValue} when it shouldn't have.","error")
@@ -134,7 +140,8 @@ def setTemperature(String strValue) {
 }
 
 def sendUpdateEvent() {
-   		def date = new Date()
+   		def date = new Date().format("yyyy-MM-dd HH:mm:ss")
+		state.lastUpdated = date
 		sendEvent(name: "lastUpdated", value: date.toString(), displayed: false)
 }
 
