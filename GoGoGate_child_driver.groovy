@@ -5,9 +5,7 @@
     
     For more documentation please see https://github.com/mgroeninger/Hubitat-gogogate2
 **/
-
 import groovy.time.*
-
 
 metadata {
     definition (name: "GoGoGate 2 Child", namespace: "gogogate2-composite", author: "Matt Groeninger") {
@@ -94,7 +92,6 @@ def setDoor(String strValue) {
 			state.lastUpdated = (new Date()).format("yyyy-MM-dd HH:mm:ss")
 		} else {
 			if (device.currentValue("door") == "opening" || device.currentValue("door") == "closing" ) {
-				def process = true
 				use (groovy.time.TimeCategory) {
 					def now = (new Date())
 					def last = (new Date()).parse("yyyy-MM-dd HH:mm:ss",state.lastUpdated)
