@@ -6,15 +6,16 @@ This is a composite driver for GoGoGate2 management in Hubitat.  Features are:
     * Multiple door devices to detected/installed for a single GoGoGate2 (up to the supported three)
     * The lights to be controlled
     * Minimizes http requests to the device for polling
-* Child devices present doors as both door controls and switch controls, making Alexa integration simplier
-* Child devices report temperature and battery readings for each sensor
+* One child device presents doors as both door controls and switch controls, making Alexa integration simplier
+* The other child device reports temperature and battery readings for each sensor
 
 Installation
-1. Add the child device driver to Drivers Code on your Hubitat hub from https://raw.githubusercontent.com/mgroeninger/Hubitat-gogogate2/master/GoGoGate_child_driver.groovy
-2. Add the parent device driver to Drivers Code on your Hubitat hub from https://raw.githubusercontent.com/mgroeninger/Hubitat-gogogate2/master/GoGoGate_parent_driver.groovy
-3. Create a Virtual Device (under devices) of type "GoGoGate 2 Parent"
-4. Fill in the ip address of your GoGoGate2 device, as well as the username and password you use to access it and save the preferences
-5. Optionally, change the child device labels to name you would like to use
+1. Add the door child device driver to Drivers Code on your Hubitat hub from https://raw.githubusercontent.com/mgroeninger/Hubitat-gogogate2/master/GoGoGate_child_door_driver.groovy
+2. Add the temperature child device driver to Drivers Code on your Hubitat hub from https://raw.githubusercontent.com/mgroeninger/Hubitat-gogogate2/master/GoGoGate_child_temp_driver.groovy
+3. Add the parent device driver to Drivers Code on your Hubitat hub from https://raw.githubusercontent.com/mgroeninger/Hubitat-gogogate2/master/GoGoGate_parent_driver.groovy
+4. Create a Virtual Device (under devices) of type "GoGoGate 2 Parent"
+5. Fill in the ip address of your GoGoGate2 device, as well as the username and password you use to access it and save the preferences
+6. Optionally, change the child device labels to name you would like to use
 
 Note:
 The driver simulates "opening" and "closing" states when a door is opened or closed using Hubitat but does not have any way to simulate those states when a door is opened or closed with the door button itself. 
