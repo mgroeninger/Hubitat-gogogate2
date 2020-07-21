@@ -8,10 +8,9 @@
 import groovy.time.*
 
 metadata {
-    definition (name: "GoGoGate 2 Child", namespace: "gogogate2-composite", author: "Matt Groeninger") {
+    definition (name: "GoGoGate 2 Door Child", namespace: "gogogate2-composite", author: "Matt Groeninger") {
         capability "DoorControl"
         capability "GarageDoorControl"
-		capability "Temperature Measurement"
 		capability "Sensor"
 		capability "Switch"
         capability "ContactSensor"
@@ -126,21 +125,10 @@ public setDoor(String strValue) {
     }
 }
 
-
 public setBattery(String strValue) {
     if (strValue != device.currentValue("battery")) {
 		parent.log("Battery has changed states from ${device.currentValue("battery")} to ${strValue}.","info")
         sendEvent(name: "battery", value: strValue, isStateChange: true)
-        sendUpdateEvent ()
-    }
-}
-
-public setTemperature(String strValue) {
-	def (temp, String scale) = strValue.split()
-	temp = temp as double
-    if (temp != device.currentValue("temperature")) {
-		parent.log("Temperature has changed from '${device.currentValue("temperature")}' to '${temp}'.","info")
-        sendEvent(name: "temperature", value: temp, unit: scale, isStateChange: true)
         sendUpdateEvent ()
     }
 }

@@ -6,8 +6,14 @@
     For more documentation please see https://github.com/mgroeninger/Hubitat-gogogate2
 **/
 
-def version() {"v0.01"}
-def childType() {"GoGoGate 2 Child"}
+def version() {"v0.02"}
+def childType(type) {
+	if (type == "temp") {
+		return "GoGoGate 2 Temperature Child"
+	} else {
+		return "GoGoGate 2 Door Child"
+	}
+}
 
 metadata {
     definition (name: "GoGoGate 2 Parent", namespace: "gogogate2-composite", author: "Matt Groeninger") {
@@ -209,8 +215,10 @@ def createChildDevices() {
 private createChildDevice(String doorNumber) {
     log("Attempting to create child for door number $doorNumber.","trace")
     try {
-        addChildDevice(childType(), "${device.deviceNetworkId}-child-$doorNumber",[name: "door-$doorNumber", label: "$device.displayName door $doorNumber", isComponent: true])
-        log("Created child device with network id: ${device.deviceNetworkId}-child-${doorNumber}}","trace")
+        addChildDevice(childType("door"), "${device.deviceNetworkId}-child-door-$doorNumber",[name: "door-$doorNumber", label: "$device.displayName door $doorNumber", isComponent: true])
+        log("Created child device with network id: ${device.deviceNetworkId}-child-door-${doorNumber}}","trace")
+        addChildDevice(childType("temp"), "${device.deviceNetworkId}-child-temp-$doorNumber",[name: "door-$doorNumber", label: "$device.displayName door $doorNumber", isComponent: true])
+        log("Created child device with network id: ${device.deviceNetworkId}-child-temp-${doorNumber}}","trace")
         return true
     } catch(e) {
         log("Failed to create child device with error = ${e}","error")
@@ -289,28 +297,33 @@ def getControllerInfo() {
    	def children = getChildDevices()
     children.each { child->
         currentDoor = child.deviceNetworkId[-1] as Integer
-        currentDoorStateInt = doorStateArr.get(currentDoor-1) as Integer
-        if (currentDoorStateInt) {
-            currentDoorDesc = "open"
-        } else {
-            currentDoorDesc = "closed"
-        }
-        log("Door ${currentDoor} has returned ${currentDoorStateInt}, which indicates the door is ${currentDoorDesc}.","trace")
-		try {
-			child.setDoor(currentDoorDesc)
-		} catch(e) {
-            log("Child setDoor call failed: ${e}","error")
-            return
-        }
-		try {
-            def (temp, battery) = getSensorInfo(currentDoor)
-                log("Sensor ${currentDoor} indicates the temperature is ${temp} and the battery level is ${battery}.","debug")
-                child.setTemperature(temp)
-                child.setBattery(battery)   
-		} catch(e) {
-            log("Child getSensorInfo call failed: ${e}","error")
-            return
-        }
+		if (child.deviceNetworkId.contains("door")) {
+			currentDoorStateInt = doorStateArr.get(currentDoor-1) as Integer
+			if (currentDoorStateInt) {
+				currentDoorDesc = "open"
+			} else {
+				currentDoorDesc = "closed"
+			}
+			log("Door ${currentDoor} has returned ${currentDoorStateInt}, which indicates the door is ${currentDoorDesc}.","trace")
+			try {
+				child.setDoor(currentDoorDesc)
+			} catch(e) {
+				log("Child setDoor call failed: ${e}","error")
+				return
+			}
+		} 
+		if (child.deviceNetworkId.contains("temp")) {
+
+			try {
+				def (temp, battery) = getSensorInfo(currentDoor)
+					log("Sensor ${currentDoor} indicates the temperature is ${temp} and the battery level is ${battery}.","debug")
+					child.setTemperature(temp)
+					child.setBattery(battery)   
+			} catch(e) {
+				log("Child getSensorInfo call failed: ${e}","error")
+				return
+			}
+		}
     }
     if (lightStatus == "unknown" || doorStateArr == null) {
         log("Multiple connection failures. Possible misconfiguration of device connection information.", "error")
