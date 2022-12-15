@@ -23,6 +23,7 @@ def initialize() {
 }
 
 public setBattery(String strValue) {
+    if (strValue == "full") { strValue = 100 }
     if (strValue != device.currentValue("battery")) {
 		parent.log("Battery has changed states from ${device.currentValue("battery")} to ${strValue}.","info")
         sendEvent(name: "battery", value: strValue, isStateChange: true)
